@@ -1,13 +1,11 @@
 """Tests for the MotionMount Sensor platform."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock
 
 from motionmount import MotionMountSystemError
 import pytest
 
 from homeassistant.core import HomeAssistant
-
-from . import MAC, ZEROCONF_NAME
 
 from tests.common import MockConfigEntry
 
@@ -27,21 +25,16 @@ from tests.common import MockConfigEntry
 async def test_error_status_sensor_states(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
+    mock_motionmount: MagicMock,
     system_status: MotionMountSystemError,
     state: str,
 ) -> None:
     """Tests the state attributes."""
-    with patch(
-        "homeassistant.components.motionmount.motionmount.MotionMount",
-        autospec=True,
-    ) as motionmount_mock:
-        motionmount_mock.return_value.name = ZEROCONF_NAME
-        motionmount_mock.return_value.mac = MAC
-        motionmount_mock.return_value.is_authenticated = True
-        motionmount_mock.return_value.system_status = [system_status]
+    mock_config_entry.add_to_hass(hass)
 
-        mock_config_entry.add_to_hass(hass)
+    mock_motionmount.is_authenticated = True
+    mock_motionmount.system_status = [system_status]
 
-        assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
+    assert await hass.config_entries.async_setup(mock_config_entry.entry_id)
 
-        assert hass.states.get("sensor.my_motionmount_error_status").state == state
+    assert hass.states.get("sensor.my_motionmount_error_status").state == state

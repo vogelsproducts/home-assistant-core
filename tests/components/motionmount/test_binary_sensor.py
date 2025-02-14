@@ -9,6 +9,7 @@ from homeassistant.core import HomeAssistant
 from tests.common import MockConfigEntry
 
 
+@pytest.mark.usefixtures("entity_registry_enabled_by_default")
 @pytest.mark.parametrize(
     ("is_moving", "state"),
     [
